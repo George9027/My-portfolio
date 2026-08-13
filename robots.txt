@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://george9027.github.io/My-Website/sitemap.xml
