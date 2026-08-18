@@ -198,7 +198,6 @@
             gap: 80px;
             align-items: start;
         }
-        .about-image-wrapper { position: relative; }
         .about-image-wrapper img {
             width: 100%;
             max-width: 400px;
@@ -379,22 +378,6 @@
             .hero-content h1 { font-size: 2.5rem; }
             .section-title, .contact-info h2 { font-size: 2rem; }
         }
-
-        /* === FEATURE: Image Upload CSS Support === */
-        #heroImage, [data-avatar] { cursor: pointer; }
-        .upload-status { display: none; }
-        #profileImageInput { display: none; }
-        .hero-overlay {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            padding: 20px;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
-            color: #fff; font-size: 0.8rem;
-            opacity: 0; transition: var(--transition);
-            pointer-events: none; text-align: center;
-            border-radius: 10px;
-        }
-        .hero-image-wrapper:hover .hero-overlay { opacity: 1; }
     </style>
 </head>
 <body>
@@ -436,19 +419,9 @@
                 </div>
             </div>
 
-            <!-- ===== HERO IMAGE (HARDCODED TO George.jpg) ===== -->
+            <!-- ===== HERO IMAGE (STATIC - George.jpg) ===== -->
             <div class="hero-image-wrapper reveal reveal-delay-1">
-                <div id="heroImage" title="Click to upload a profile image">
-                    <!-- LOADING George.jpg BY DEFAULT -->
-                    <img id="heroImageImg" src="George.jpg" alt="George Mulinge" style="display:block;" />
-                    
-                    <div id="heroPlaceholder" style="display:none;">
-                        <i class="fas fa-image" style="font-size: 3.5rem; opacity: 0.5;"></i>
-                        <span>Click to upload your photo</span>
-                    </div>
-                    
-                    <div class="hero-overlay"><i class="fas fa-camera"></i> Click to change · Double-click to remove</div>
-                </div>
+                <img src="George.jpg" alt="George Mulinge" />
             </div>
         </div>
     </section>
@@ -459,16 +432,8 @@
     <section class="about" id="about">
         <div class="container about-grid">
             <div class="about-image-wrapper reveal">
-                <!-- ===== ABOUT IMAGE (HARDCODED TO George.jpg) ===== -->
-                <div id="aboutAvatar" title="Click to upload" style="width:100%; max-width:400px; border-radius:10px; border:1px solid var(--border-dim); background:var(--bg-primary); overflow:hidden; aspect-ratio:3/4; position:relative;">
-                    <!-- LOADING George.jpg BY DEFAULT -->
-                    <img id="aboutAvatarImg" src="George.jpg" alt="George Mulinge" style="display:block; width:100%; height:100%; object-fit:cover;" />
-                    
-                    <div id="aboutPlaceholder" style="display:none; width:100%; height:100%; align-items:center; justify-content:center; flex-direction:column; color:var(--text-muted); gap:10px;">
-                        <i class="fas fa-image" style="font-size: 3.5rem; opacity: 0.5;"></i>
-                        <span>Click to upload</span>
-                    </div>
-                </div>
+                <!-- ===== ABOUT IMAGE (STATIC - George.jpg) ===== -->
+                <img src="George.jpg" alt="George Mulinge" />
             </div>
 
             <div class="about-text reveal reveal-delay-1">
@@ -642,9 +607,6 @@
         </div>
     </footer>
 
-    <!-- ===== HIDDEN FILE INPUT ===== -->
-    <input type="file" id="profileImageInput" accept="image/*" />
-
     <!-- ===== JAVASCRIPT ===== -->
     <script>
         // ---- 1. NAVIGATION & SCROLL LOGIC ----
@@ -675,84 +637,7 @@
             });
         });
 
-        // ---- 2. PROFILE PICTURE UPLOAD (Replacement Feature) ----
-        const fileInput = document.getElementById('profileImageInput');
-        const heroImage = document.getElementById('heroImage');
-        const heroImg = document.getElementById('heroImageImg');
-        const heroPlaceholder = document.getElementById('heroPlaceholder');
-        
-        const aboutAvatar = document.getElementById('aboutAvatar');
-        const aboutAvatarImg = document.getElementById('aboutAvatarImg');
-        const aboutPlaceholder = document.getElementById('aboutPlaceholder');
-
-        function updateAllImages(src) {
-            if (src) {
-                heroImg.src = src; heroImg.style.display = 'block';
-                heroPlaceholder.style.display = 'none';
-                
-                aboutAvatarImg.src = src; aboutAvatarImg.style.display = 'block';
-                aboutPlaceholder.style.display = 'none';
-            } else {
-                heroImg.src = ''; heroImg.style.display = 'none';
-                heroPlaceholder.style.display = 'flex';
-                
-                aboutAvatarImg.src = ''; aboutAvatarImg.style.display = 'none';
-                aboutPlaceholder.style.display = 'flex';
-            }
-        }
-
-        function compressImage(file, maxWidth, maxHeight, quality) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width, height = img.height;
-                        if (width > height) {
-                            if (width > maxWidth) { height = (height * maxWidth) / width; width = maxWidth; }
-                        } else {
-                            if (height > maxHeight) { width = (width * maxHeight) / height; height = maxHeight; }
-                        }
-                        canvas.width = width; canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        resolve(canvas.toDataURL('image/jpeg', quality));
-                    };
-                };
-            });
-        }
-
-        function triggerUpload() { fileInput.click(); }
-        heroImage.addEventListener('click', triggerUpload);
-        aboutAvatar.addEventListener('click', triggerUpload);
-
-        heroImage.addEventListener('dblclick', function(e) {
-            if (confirm('Remove profile picture?')) { localStorage.removeItem('profileImage'); updateAllImages(null); }
-        });
-        aboutAvatar.addEventListener('dblclick', function(e) {
-            if (confirm('Remove profile picture?')) { localStorage.removeItem('profileImage'); updateAllImages(null); }
-        });
-
-        fileInput.addEventListener('change', async function(e) {
-            const file = this.files[0];
-            if (!file) return;
-            try {
-                const compressedDataUrl = await compressImage(file, 600, 600, 0.75);
-                localStorage.setItem('profileImage', compressedDataUrl);
-                updateAllImages(compressedDataUrl);
-            } catch (error) {
-                alert('Failed to upload image.');
-                const saved = localStorage.getItem('profileImage');
-                if (saved) updateAllImages(saved);
-                else updateAllImages(null);
-            }
-            fileInput.value = '';
-        });
-
-        // ---- 3. SCROLL REVEAL ANIMATIONS ----
+        // ---- 2. SCROLL REVEAL ANIMATIONS ----
         const revealElements = document.querySelectorAll('.reveal');
         const revealObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -761,8 +646,8 @@
         }, { threshold: 0.15 });
         revealElements.forEach(el => revealObserver.observe(el));
 
-        // ---- 4. CONTACT FORM ALERT ----
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
+        // ---- 3. CONTACT FORM ----
+        document.querySelector('.contact-form').addEventListener('submit', function(e) {
             e.preventDefault();
             alert('Thank you! George will get back to you soon.');
             this.reset();
